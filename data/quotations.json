@@ -1,0 +1,96 @@
+[
+  {
+    "id": "d5e279a1-e3c5-421b-ac96-b3ec25ceab3e",
+    "quotationNumber": "GNF-Q-0001",
+    "customerName": "ll",
+    "contactPerson": "Moges Shitaw Awoke",
+    "phone": "0974149838",
+    "email": "mogesshitaw318@gmail.com",
+    "projectTitle": "",
+    "issueDate": "2026-09-29",
+    "validUntil": "2026-09-29",
+    "deliveryTime": "3",
+    "paymentTerms": "",
+    "notes": "",
+    "items": [
+      {
+        "id": "59cf23de-8027-4d7b-aa9e-556cafc87525",
+        "serviceId": 1,
+        "service": "Banner Printing",
+        "description": "High quality banner printing",
+        "pricingType": "area",
+        "quantity": 1,
+        "width": 1,
+        "height": 1,
+        "unit": "m2",
+        "unitPrice": 111,
+        "total": 111
+      }
+    ],
+    "subtotal": 111,
+    "discount": 0,
+    "tax": 0,
+    "grandTotal": 111,
+    "status": "draft",
+    "createdAt": "2026-09-29T14:12:02.578Z",
+    "updatedAt": "2026-09-29T14:12:02.578Z"
+  },
+  {
+    "id": "8b615daa-665f-4775-ae5b-f5e64c147e91",
+    "quotationNumber": "GNF-Q-0002",
+    "customerName": "ll",
+    "contactPerson": "Moges Shitaw Awoke",
+    "phone": "0974149838",
+    "email": "mogesshitaw318@gmail.com",
+    "projectTitle": "",
+    "issueDate": "2026-09-29",
+    "validUntil": "2026-09-29",
+    "deliveryTime": "3",
+    "paymentTerms": "",
+    "notes": "",
+    "items": [
+      {
+        "id": "59cf23de-8027-4d7b-aa9e-556cafc87525",
+        "serviceId": 1,
+        "service": "Banner Printing",
+        "description": "High quality banner printing",
+        "pricingType": "area",
+        "quantity": 1,
+        "width": 1,
+        "height": 1,
+        "unit": "m2",
+        "unitPrice": 111,
+        "total": 111
+      },
+      {
+        "id": "aeb3f0cb-fb77-4a25-9342-4744481ca3a4",
+        "serviceId": 2,
+        "service": "Business Card",
+        "description": "Professional business card printing",
+        "pricingType": "quantity",
+        "quantity": 1,
+        "unit": "piece",
+        "unitPrice": 5,
+        "total": 5
+      },
+      {
+        "id": "4b0c9c61-3907-4497-8e89-7dbd51e48acf",
+        "serviceId": 5,
+        "service": "Logo Design",
+        "description": "Professional logo design",
+        "pricingType": "fixed",
+        "quantity": 1,
+        "unit": "service",
+        "unitPrice": 500,
+        "total": 500
+      }
+    ],
+    "subtotal": 616,
+    "discount": 0,
+    "tax": 0,
+    "grandTotal": 616,
+    "status": "draft",
+    "createdAt": "2026-09-29T15:50:20.169Z",
+    "updatedAt": "2026-09-29T15:50:20.169Z"
+  }
+]

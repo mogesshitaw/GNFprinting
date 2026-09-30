@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "service": "Banner Printing",
+    "description": "High quality banner printing",
+    "pricingType": "area",
+    "unitPrice": 350,
+    "unit": "m2"
+  },
+  {
+    "id": 2,
+    "service": "Business Card",
+    "description": "Professional business card printing",
+    "pricingType": "quantity",
+    "unitPrice": 5,
+    "unit": "piece"
+  },
+  {
+    "id": 3,
+    "service": "Acrylic Sign",
+    "description": "Custom acrylic sign printing",
+    "pricingType": "area",
+    "unitPrice": 850,
+    "unit": "m2"
+  },
+  {
+    "id": 4,
+    "service": "Printing Paper",
+    "description": "A4 printing paper",
+    "pricingType": "quantity",
+    "unitPrice": 5,
+    "unit": "sheet"
+  },
+  {
+    "id": 5,
+    "service": "Logo Design",
+    "description": "Professional logo design",
+    "pricingType": "fixed",
+    "unitPrice": 500,
+    "unit": "service"
+  }
+]
