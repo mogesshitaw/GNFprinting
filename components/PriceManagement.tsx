@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @next/next/no-img-element */
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,13 +13,20 @@ const money = (value: number) =>
     maximumFractionDigits: 2,
   }).format(value);
 
-export default function PriceManagement() {
-  const [prices, setPrices] = useState<Price[]>([]);
+interface PriceManagementProps {
+  initialPrices: Price[];
+}
+
+export default function PriceManagement({
+  initialPrices,
+}: PriceManagementProps) {
+  const [prices, setPrices] =
+    useState<Price[]>(initialPrices);
 
   const [editingPrice, setEditingPrice] =
     useState<Price | null>(null);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   async function loadPrices() {
     try {
@@ -37,9 +45,7 @@ export default function PriceManagement() {
       }
 
       setPrices(
-        Array.isArray(data)
-          ? data
-          : []
+        Array.isArray(data) ? data : []
       );
     } catch (error) {
       console.error(error);
@@ -49,10 +55,6 @@ export default function PriceManagement() {
       setLoading(false);
     }
   }
-
-  useEffect(() => {
-    loadPrices();
-  }, []);
 
   async function deleteService(price: Price) {
     const confirmed = window.confirm(
@@ -102,17 +104,8 @@ export default function PriceManagement() {
       {/* =========================
           PRICE FORM
       ========================== */}
+
       <PriceForm
-        /*
-         * Important:
-         *
-         * When editingPrice changes, React creates
-         * a fresh PriceForm.
-         *
-         * This allows PriceForm to initialize its
-         * state directly from the selected price
-         * without using setState inside useEffect.
-         */
         key={editingPrice?.id ?? "new"}
         price={editingPrice}
         onSaved={() => {
@@ -129,6 +122,7 @@ export default function PriceManagement() {
       {/* =========================
           SERVICES TABLE
       ========================== */}
+
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div>
@@ -150,6 +144,7 @@ export default function PriceManagement() {
         {/* =========================
             LOADING
         ========================== */}
+
         {loading ? (
           <div className="py-12 text-center text-slate-500">
             Loading services...
@@ -158,6 +153,7 @@ export default function PriceManagement() {
           /* =========================
              EMPTY STATE
           ========================== */
+
           <div className="rounded-xl border-2 border-dashed border-slate-300 p-12 text-center">
             <p className="font-semibold text-slate-700">
               No services found.
@@ -171,6 +167,7 @@ export default function PriceManagement() {
           /* =========================
              SERVICES TABLE
           ========================== */
+
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px]">
               <thead>
@@ -212,6 +209,7 @@ export default function PriceManagement() {
                     className="border-b border-slate-100"
                   >
                     {/* IMAGE */}
+
                     <td className="px-4 py-4">
                       {price.images?.[0] ? (
                         <img
@@ -227,6 +225,7 @@ export default function PriceManagement() {
                     </td>
 
                     {/* SERVICE */}
+
                     <td className="px-4 py-4">
                       <div className="font-semibold text-slate-900">
                         {price.service}
@@ -238,6 +237,7 @@ export default function PriceManagement() {
                     </td>
 
                     {/* PRICING TYPE */}
+
                     <td className="px-4 py-4">
                       <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold capitalize text-slate-700">
                         {price.pricingType}
@@ -245,16 +245,19 @@ export default function PriceManagement() {
                     </td>
 
                     {/* PRICE */}
+
                     <td className="px-4 py-4 font-semibold text-slate-900">
                       {money(price.unitPrice)} ETB
                     </td>
 
                     {/* UNIT */}
+
                     <td className="px-4 py-4 text-slate-600">
                       {price.unit}
                     </td>
 
                     {/* IMAGE COUNT */}
+
                     <td className="px-4 py-4">
                       <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
                         {price.images?.length || 0}
@@ -262,6 +265,7 @@ export default function PriceManagement() {
                     </td>
 
                     {/* ACTIONS */}
+
                     <td className="px-4 py-4">
                       <div className="flex justify-end gap-2">
                         <button
