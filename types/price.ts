@@ -8,6 +8,7 @@ export interface Price {
   id: number;
   service: string;
   description: string;
+  images: string[];
 
   /**
    * How this service is priced.

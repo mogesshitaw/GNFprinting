@@ -469,16 +469,16 @@ export default function ServicesView({
           DETAILS MODAL
       ====================================================== */}
 
-      {selectedService && (
-        <ServiceDetailsModal
-          price={selectedService}
-          onClose={closeDetails}
-          onCalculate={() =>
-            openCalculator(selectedService)
-          }
-        />
-      )}
-
+     {selectedService && (
+  <ServiceDetailsModal
+    open={true}
+    price={selectedService}
+    onClose={closeDetails}
+    onCalculate={() =>
+      openCalculator(selectedService)
+    }
+  />
+)}
 
       {/* =====================================================
           CALCULATOR MODAL

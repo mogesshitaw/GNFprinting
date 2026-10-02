@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import PublishButton from "./PublishButton";
 
 export default function AdminHeader() {
   const pathname = usePathname();
@@ -33,6 +34,7 @@ export default function AdminHeader() {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex min-h-20 items-center justify-between gap-4">
+
           {/* BRAND */}
           <Link
             href="/admin/prices"
@@ -83,9 +85,13 @@ export default function AdminHeader() {
 
           {/* RIGHT */}
           <div className="flex items-center gap-2">
+
+            {/* PUBLISH */}
+            <PublishButton />
+
             <Link
               href="/"
-              className="hidden rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 sm:block"
+              className="hidden rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 lg:block"
             >
               View Website
             </Link>
@@ -102,6 +108,7 @@ export default function AdminHeader() {
 
         {/* MOBILE NAVIGATION */}
         <div className="flex gap-2 overflow-x-auto border-t border-slate-100 py-3 md:hidden">
+
           <MobileNavLink
             href="/admin/prices"
             active={isPrices}
@@ -122,6 +129,11 @@ export default function AdminHeader() {
           >
             🌐 Website
           </Link>
+
+          {/* Mobile publish */}
+          <div className="shrink-0">
+            <PublishButton />
+          </div>
         </div>
       </div>
     </header>

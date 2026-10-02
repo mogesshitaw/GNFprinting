@@ -15,7 +15,22 @@ export function getPrices(): Price[] {
 
   const file = fs.readFileSync(filePath, "utf-8");
 
-  return JSON.parse(file);
+  if (!file.trim()) {
+    return [];
+  }
+
+  const data = JSON.parse(file);
+
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return data.map((price) => ({
+    ...price,
+    images: Array.isArray(price.images)
+      ? price.images
+      : [],
+  }));
 }
 
 export function savePrices(prices: Price[]) {
@@ -31,28 +46,27 @@ export function addPrice(
 ): Price {
   const prices = getPrices();
 
-  const newId =
+  const nextId =
     prices.length > 0
-      ? Math.max(
-          ...prices.map((price) => price.id)
-        ) + 1
+      ? Math.max(...prices.map((p) => p.id)) + 1
       : 1;
 
-  const newPrice: Price = {
-    id: newId,
+  const price: Price = {
+    id: nextId,
     ...data,
+    images: data.images || [],
   };
 
-  prices.push(newPrice);
+  prices.push(price);
 
   savePrices(prices);
 
-  return newPrice;
+  return price;
 }
 
 export function updatePrice(
   id: number,
-  data: Omit<Price, "id">
+  data: Partial<Omit<Price, "id">>
 ) {
   const prices = getPrices();
 
@@ -65,8 +79,12 @@ export function updatePrice(
   }
 
   prices[index] = {
-    id,
+    ...prices[index],
     ...data,
+    images:
+      data.images !== undefined
+        ? data.images
+        : prices[index].images || [],
   };
 
   savePrices(prices);
@@ -77,15 +95,15 @@ export function updatePrice(
 export function deletePrice(id: number) {
   const prices = getPrices();
 
-  const filteredPrices = prices.filter(
+  const filtered = prices.filter(
     (price) => price.id !== id
   );
 
-  if (filteredPrices.length === prices.length) {
+  if (filtered.length === prices.length) {
     return false;
   }
 
-  savePrices(filteredPrices);
+  savePrices(filtered);
 
   return true;
 }

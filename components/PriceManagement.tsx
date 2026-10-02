@@ -1,41 +1,62 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Price } from "@/types/price";
-import PriceForm from "@/components/PriceForm";
-import PriceTable from "@/components/PriceTable";
+import PriceForm from "./PriceForm";
 
-interface PriceManagementProps {
-  initialPrices: Price[];
-}
+const money = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
 
-export default function PriceManagement({
-  initialPrices,
-}: PriceManagementProps) {
-  const [prices, setPrices] = useState<Price[]>(
-    initialPrices
-  );
+export default function PriceManagement() {
+  const [prices, setPrices] = useState<Price[]>([]);
 
   const [editingPrice, setEditingPrice] =
     useState<Price | null>(null);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  async function refreshPrices() {
-    const response = await fetch("/api/prices");
+  async function loadPrices() {
+    try {
+      setLoading(true);
 
-    if (!response.ok) {
-      throw new Error("Failed to load prices");
+      const response = await fetch("/api/prices", {
+        cache: "no-store",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Failed to load prices."
+        );
+      }
+
+      setPrices(
+        Array.isArray(data)
+          ? data
+          : []
+      );
+    } catch (error) {
+      console.error(error);
+
+      alert("Failed to load services.");
+    } finally {
+      setLoading(false);
     }
-
-    const data: Price[] = await response.json();
-
-    setPrices(data);
   }
 
-  async function handleDelete(id: number) {
+  useEffect(() => {
+    loadPrices();
+  }, []);
+
+  async function deleteService(price: Price) {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this price?"
+      `Delete "${price.service}"?`
     );
 
     if (!confirmed) {
@@ -43,96 +64,234 @@ export default function PriceManagement({
     }
 
     try {
-      setLoading(true);
-
       const response = await fetch("/api/prices", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({
+          id: price.id,
+        }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to delete price");
+        throw new Error(
+          data.error ||
+            "Failed to delete service."
+        );
       }
 
-      await refreshPrices();
-
-      if (editingPrice?.id === id) {
+      if (editingPrice?.id === price.id) {
         setEditingPrice(null);
       }
+
+      await loadPrices();
     } catch (error) {
-      console.error(error);
-      alert("Failed to delete price.");
-    } finally {
-      setLoading(false);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete service."
+      );
     }
-  }
-
-  async function handleSaved() {
-    try {
-      setLoading(true);
-
-      await refreshPrices();
-
-      setEditingPrice(null);
-    } catch (error) {
-      console.error(error);
-      alert("Failed to refresh prices.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function handleEdit(price: Price) {
-    setEditingPrice(price);
-  }
-
-  function handleCancel() {
-    setEditingPrice(null);
   }
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-12">
-      <div className="mb-10">
-        <p className="font-semibold text-blue-600">
-          GNF PRINTING
-        </p>
+    <div className="space-y-8">
+      {/* =========================
+          PRICE FORM
+      ========================== */}
+      <PriceForm
+        /*
+         * Important:
+         *
+         * When editingPrice changes, React creates
+         * a fresh PriceForm.
+         *
+         * This allows PriceForm to initialize its
+         * state directly from the selected price
+         * without using setState inside useEffect.
+         */
+        key={editingPrice?.id ?? "new"}
+        price={editingPrice}
+        onSaved={() => {
+          setEditingPrice(null);
+          loadPrices();
+        }}
+        onCancel={
+          editingPrice
+            ? () => setEditingPrice(null)
+            : undefined
+        }
+      />
 
-        <h1 className="mt-2 text-4xl font-bold">
-          Price Management
-        </h1>
+      {/* =========================
+          SERVICES TABLE
+      ========================== */}
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">
+              Services & Prices
+            </h2>
 
-        <p className="mt-3 text-gray-600">
-          Add, update and delete printing service prices.
-        </p>
-      </div>
+            <p className="mt-1 text-sm text-slate-500">
+              Manage your printing services,
+              prices and images.
+            </p>
+          </div>
 
-      {loading && (
-        <div className="mb-5 rounded-lg bg-blue-50 px-4 py-3 text-blue-700">
-          Processing...
+          <div className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+            {prices.length} Services
+          </div>
         </div>
-      )}
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div>
-          <PriceForm
-            key={editingPrice?.id ?? "new"}
-            editingPrice={editingPrice}
-            onSaved={handleSaved}
-            onCancel={handleCancel}
-          />
-        </div>
+        {/* =========================
+            LOADING
+        ========================== */}
+        {loading ? (
+          <div className="py-12 text-center text-slate-500">
+            Loading services...
+          </div>
+        ) : prices.length === 0 ? (
+          /* =========================
+             EMPTY STATE
+          ========================== */
+          <div className="rounded-xl border-2 border-dashed border-slate-300 p-12 text-center">
+            <p className="font-semibold text-slate-700">
+              No services found.
+            </p>
 
-        <div className="lg:col-span-2">
-          <PriceTable
-            prices={prices}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        </div>
-      </div>
-    </section>
+            <p className="mt-1 text-sm text-slate-500">
+              Create your first service above.
+            </p>
+          </div>
+        ) : (
+          /* =========================
+             SERVICES TABLE
+          ========================== */
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px]">
+              <thead>
+                <tr className="border-b border-slate-200 text-left">
+                  <th className="px-4 py-4 text-sm font-bold text-slate-600">
+                    Image
+                  </th>
+
+                  <th className="px-4 py-4 text-sm font-bold text-slate-600">
+                    Service
+                  </th>
+
+                  <th className="px-4 py-4 text-sm font-bold text-slate-600">
+                    Type
+                  </th>
+
+                  <th className="px-4 py-4 text-sm font-bold text-slate-600">
+                    Price
+                  </th>
+
+                  <th className="px-4 py-4 text-sm font-bold text-slate-600">
+                    Unit
+                  </th>
+
+                  <th className="px-4 py-4 text-sm font-bold text-slate-600">
+                    Images
+                  </th>
+
+                  <th className="px-4 py-4 text-right text-sm font-bold text-slate-600">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {prices.map((price) => (
+                  <tr
+                    key={price.id}
+                    className="border-b border-slate-100"
+                  >
+                    {/* IMAGE */}
+                    <td className="px-4 py-4">
+                      {price.images?.[0] ? (
+                        <img
+                          src={price.images[0]}
+                          alt={price.service}
+                          className="h-14 w-20 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-14 w-20 items-center justify-center rounded-lg bg-slate-100 text-xl">
+                          🖼️
+                        </div>
+                      )}
+                    </td>
+
+                    {/* SERVICE */}
+                    <td className="px-4 py-4">
+                      <div className="font-semibold text-slate-900">
+                        {price.service}
+                      </div>
+
+                      <div className="mt-1 max-w-xs truncate text-sm text-slate-500">
+                        {price.description}
+                      </div>
+                    </td>
+
+                    {/* PRICING TYPE */}
+                    <td className="px-4 py-4">
+                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold capitalize text-slate-700">
+                        {price.pricingType}
+                      </span>
+                    </td>
+
+                    {/* PRICE */}
+                    <td className="px-4 py-4 font-semibold text-slate-900">
+                      {money(price.unitPrice)} ETB
+                    </td>
+
+                    {/* UNIT */}
+                    <td className="px-4 py-4 text-slate-600">
+                      {price.unit}
+                    </td>
+
+                    {/* IMAGE COUNT */}
+                    <td className="px-4 py-4">
+                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+                        {price.images?.length || 0}
+                      </span>
+                    </td>
+
+                    {/* ACTIONS */}
+                    <td className="px-4 py-4">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEditingPrice(price)
+                          }
+                          className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            deleteService(price)
+                          }
+                          className="rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
   );
 }
