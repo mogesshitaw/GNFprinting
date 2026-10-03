@@ -4,9 +4,7 @@
     "service": "Banner Printing",
     "description": "High quality banner printing for indoor and outdoor advertising.",
     "images": [
-      "/images/services/banner-printing/banner-1.jpg",
-      "/images/services/banner-printing/banner-2.jpg",
-      "/images/services/banner-printing/banner-3.jpg"
+      "/images/services/banner-printing-1790991863912/download-1.webp"
     ],
     "pricingType": "area",
     "unitPrice": 350,
@@ -17,7 +15,7 @@
     "service": "Business Card",
     "description": "Professional business card printing.",
     "images": [
-      "/images/services/business-card-1790988892611/download-1--1.webp"
+      "/images/services/business-card-1790990532653/download-1--1.webp"
     ],
     "pricingType": "quantity",
     "unitPrice": 5,
