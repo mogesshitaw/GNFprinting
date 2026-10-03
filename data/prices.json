@@ -85,7 +85,9 @@
     "id": 8,
     "service": "moges",
     "description": "",
-    "images": [],
+    "images": [
+      "/images/services/moges-1790987645486/wax-1.png"
+    ],
     "pricingType": "fixed",
     "unitPrice": 556,
     "unit": "piece"
