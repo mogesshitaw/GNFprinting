@@ -2,7 +2,7 @@
   {
     "id": "d5e279a1-e3c5-421b-ac96-b3ec25ceab3e",
     "quotationNumber": "GNF-Q-0001",
-    "customerName": "moges",
+    "customerName": "Moges Shitaw Awoke",
     "contactPerson": "",
     "phone": "",
     "email": "",
@@ -25,15 +25,26 @@
         "unit": "m2",
         "unitPrice": 111,
         "total": 111
+      },
+      {
+        "id": "46bec447-a5cf-4a39-9dc3-8d8cdc601672",
+        "serviceId": 3,
+        "service": "Acrylic Sign",
+        "description": "Custom acrylic sign production and printing.",
+        "pricingType": "area",
+        "quantity": 1,
+        "unit": "m2",
+        "unitPrice": 850,
+        "total": 850
       }
     ],
-    "subtotal": 111,
+    "subtotal": 961,
     "discount": 0,
     "tax": 0,
-    "grandTotal": 111,
+    "grandTotal": 961,
     "status": "draft",
     "createdAt": "2026-09-29T14:12:02.578Z",
-    "updatedAt": "2026-10-03T16:48:25.234Z"
+    "updatedAt": "2026-10-03T17:13:51.254Z"
   },
   {
     "id": "8b615daa-665f-4775-ae5b-f5e64c147e91",
