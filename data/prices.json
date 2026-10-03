@@ -51,41 +51,7 @@
       "/images/services/logo-design-1790987518550/a9fc62ca-54d9-4406-86ba-96e27685631f-1.jpg"
     ],
     "pricingType": "fixed",
-    "unitPrice": 500,
+    "unitPrice": 1000,
     "unit": "service"
-  },
-  {
-    "id": 6,
-    "service": "ttt",
-    "description": "",
-    "images": [
-      "/images/services/ttt-1790909793064/a9fc62ca-54d9-4406-86ba-96e27685631f-1.jpg",
-      "/images/services/ttt-1790909793064/photo-2026-07-14-00-32-24-3.jpg"
-    ],
-    "pricingType": "fixed",
-    "unitPrice": 45,
-    "unit": "m2"
-  },
-  {
-    "id": 7,
-    "service": "hhh",
-    "description": "",
-    "images": [
-      "/images/services/hhh-1790911722309/a9fc62ca-54d9-4406-86ba-96e27685631f-1.jpg"
-    ],
-    "pricingType": "fixed",
-    "unitPrice": 611,
-    "unit": "pice"
-  },
-  {
-    "id": 8,
-    "service": "moges",
-    "description": "",
-    "images": [
-      "/images/services/moges-1790987645486/wax-1.png"
-    ],
-    "pricingType": "fixed",
-    "unitPrice": 556,
-    "unit": "piece"
   }
 ]
