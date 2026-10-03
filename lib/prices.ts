@@ -1,19 +1,34 @@
 import fs from "fs";
 import path from "path";
 import { Price } from "@/types/price";
+import { getPublicDataPath } from "@/lib/paths";
 
-const filePath = path.join(
-  process.cwd(),
-  "data",
-  "prices.json"
-);
+function getPricesFilePath() {
+  return getPublicDataPath("prices.json");
+}
+
+function ensureDataDirectory() {
+  const filePath = getPricesFilePath();
+  const dataDirectory = path.dirname(filePath);
+
+  fs.mkdirSync(dataDirectory, {
+    recursive: true,
+  });
+}
+
 
 export function getPrices(): Price[] {
+  const filePath =
+    getPricesFilePath();
+
   if (!fs.existsSync(filePath)) {
     return [];
   }
 
-  const file = fs.readFileSync(filePath, "utf-8");
+  const file = fs.readFileSync(
+    filePath,
+    "utf-8"
+  );
 
   if (!file.trim()) {
     return [];
@@ -33,7 +48,14 @@ export function getPrices(): Price[] {
   }));
 }
 
-export function savePrices(prices: Price[]) {
+export function savePrices(
+  prices: Price[]
+) {
+  ensureDataDirectory();
+
+  const filePath =
+    getPricesFilePath();
+
   fs.writeFileSync(
     filePath,
     JSON.stringify(prices, null, 2),
@@ -48,7 +70,9 @@ export function addPrice(
 
   const nextId =
     prices.length > 0
-      ? Math.max(...prices.map((p) => p.id)) + 1
+      ? Math.max(
+          ...prices.map((p) => p.id)
+        ) + 1
       : 1;
 
   const price: Price = {
@@ -92,14 +116,19 @@ export function updatePrice(
   return prices[index];
 }
 
-export function deletePrice(id: number) {
+export function deletePrice(
+  id: number
+) {
   const prices = getPrices();
 
   const filtered = prices.filter(
     (price) => price.id !== id
   );
 
-  if (filtered.length === prices.length) {
+  if (
+    filtered.length ===
+    prices.length
+  ) {
     return false;
   }
 

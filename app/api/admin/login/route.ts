@@ -33,10 +33,11 @@ export async function POST(request: NextRequest) {
     }
 
     const cookieStore = await cookies();
+    const isHttps = request.nextUrl.protocol === "https:";
 
     cookieStore.set("gnf_admin", "authenticated", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isHttps,
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 8,

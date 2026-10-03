@@ -1,6 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
+
 import fs from "fs";
+
 import path from "path";
+
 import {
   getPrices,
   addPrice,
@@ -8,13 +14,19 @@ import {
   deletePrice,
 } from "@/lib/prices";
 
+import {
+  getPublicImagesPath,
+} from "@/lib/paths";
+
 interface UploadedImage {
   name: string;
   dataUrl: string;
 }
 
 const MAX_IMAGES = 20;
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
+const MAX_IMAGE_SIZE =
+  5 * 1024 * 1024;
 
 const allowedExtensions = [
   ".jpg",
@@ -32,12 +44,21 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function safeFileName(value: string) {
+function safeFileName(
+  value: string
+) {
   return value
     .toLowerCase()
-    .replace(/[^a-z0-9.-]/g, "-")
+    .replace(
+      /[^a-z0-9.-]/g,
+      "-"
+    )
     .replace(/-+/g, "-");
 }
+
+/* =========================================================
+   SAVE UPLOADED IMAGES
+========================================================= */
 
 function saveUploadedImages(
   serviceName: string,
@@ -50,119 +71,229 @@ function saveUploadedImages(
   const folderName =
     `${slugify(serviceName)}-${Date.now()}`;
 
-  const folderPath = path.join(
-    process.cwd(),
-    "public",
-    "images",
-    "services",
-    folderName
+  /*
+   * IMPORTANT:
+   *
+   * Development:
+   *   C:\Users\moges\Desktop\gnf-printing\
+   *     public\images\services
+   *
+   * Packaged:
+   *   C:\Users\<user>\AppData\Roaming\
+   *     gnf-printing\repository\
+   *       public\images\services
+   */
+
+  const folderPath =
+    path.join(
+      getPublicImagesPath(),
+      "services",
+      folderName
+    );
+
+  fs.mkdirSync(
+    folderPath,
+    {
+      recursive: true,
+    }
   );
 
-  fs.mkdirSync(folderPath, {
-    recursive: true,
-  });
+  const savedPaths: string[] =
+    [];
 
-  const savedPaths: string[] = [];
+  uploadedImages.forEach(
+    (image, index) => {
+      if (!image.dataUrl) {
+        return;
+      }
 
-  uploadedImages.forEach((image, index) => {
-    if (!image.dataUrl) {
-      return;
-    }
+      /*
+       * Expected:
+       *
+       * data:image/png;base64,...
+       * data:image/jpeg;base64,...
+       */
 
-    const match = image.dataUrl.match(
-      /^data:image\/([a-zA-Z0-9.+-]+);base64,(.+)$/
-    );
+      const match =
+        image.dataUrl.match(
+          /^data:image\/([a-zA-Z0-9.+-]+);base64,(.+)$/
+        );
 
-    if (!match) {
-      throw new Error(
-        `Invalid image format for ${image.name}`
+      if (!match) {
+        throw new Error(
+          `Invalid image format for ${image.name}`
+        );
+      }
+
+      const extensionFromMime =
+        match[1].toLowerCase();
+
+      const extension =
+        extensionFromMime ===
+        "jpeg"
+          ? ".jpg"
+          : `.${extensionFromMime}`;
+
+      if (
+        !allowedExtensions.includes(
+          extension
+        )
+      ) {
+        throw new Error(
+          `Unsupported image format: ${extension}`
+        );
+      }
+
+      const buffer =
+        Buffer.from(
+          match[2],
+          "base64"
+        );
+
+      if (
+        buffer.length >
+        MAX_IMAGE_SIZE
+      ) {
+        throw new Error(
+          `${image.name} is larger than 5MB.`
+        );
+      }
+
+      const originalName =
+        path.basename(
+          image.name ||
+            `image-${index + 1}`
+        );
+
+      const baseName =
+        path.basename(
+          originalName,
+          path.extname(
+            originalName
+          )
+        );
+
+      const fileName =
+        `${safeFileName(baseName) || "image"}-${index + 1}${extension}`;
+
+      const filePath =
+        path.join(
+          folderPath,
+          fileName
+        );
+
+      fs.writeFileSync(
+        filePath,
+        buffer
+      );
+
+      // If local standalone public folder is separate, also sync for local preview
+      const localPublicImages = path.join(process.cwd(), "public", "images");
+      if (path.resolve(localPublicImages) !== path.resolve(getPublicImagesPath())) {
+        try {
+          const localFolder = path.join(localPublicImages, "services", folderName);
+          fs.mkdirSync(localFolder, { recursive: true });
+          fs.writeFileSync(path.join(localFolder, fileName), buffer);
+        } catch (syncErr) {
+          console.warn("Could not sync image to local standalone public dir:", syncErr);
+        }
+      }
+
+      /*
+       * This path is stored in prices.json.
+       *
+       * The public website will later use:
+       *
+       * /images/services/...
+       */
+
+      savedPaths.push(
+        `/images/services/${folderName}/${fileName}`
       );
     }
-
-    const extensionFromMime =
-      match[1].toLowerCase();
-
-    const extension =
-      extensionFromMime === "jpeg"
-        ? ".jpg"
-        : `.${extensionFromMime}`;
-
-    if (
-      !allowedExtensions.includes(extension)
-    ) {
-      throw new Error(
-        `Unsupported image format: ${extension}`
-      );
-    }
-
-    const buffer = Buffer.from(
-      match[2],
-      "base64"
-    );
-
-    if (buffer.length > MAX_IMAGE_SIZE) {
-      throw new Error(
-        `${image.name} is larger than 5MB.`
-      );
-    }
-
-    const originalName = path.basename(
-      image.name || `image-${index + 1}`
-    );
-
-    const baseName = path.basename(
-      originalName,
-      path.extname(originalName)
-    );
-
-    const fileName =
-      `${safeFileName(baseName) || "image"}-${index + 1}${extension}`;
-
-    const filePath = path.join(
-      folderPath,
-      fileName
-    );
-
-    fs.writeFileSync(filePath, buffer);
-
-    savedPaths.push(
-      `/images/services/${folderName}/${fileName}`
-    );
-  });
+  );
 
   return savedPaths;
 }
 
-function deleteImageFile(imagePath: string) {
-  if (!imagePath.startsWith("/images/services/")) {
+/* =========================================================
+   DELETE IMAGE FILE
+========================================================= */
+
+function deleteImageFile(
+  imagePath: string
+) {
+  if (
+    !imagePath.startsWith(
+      "/images/services/"
+    )
+  ) {
     return;
   }
 
-  const relativePath = imagePath.replace(
-    /^\/+/,
-    ""
-  );
+  const relativePath =
+    imagePath.replace(
+      /^\/+/,
+      ""
+    );
 
-  const fullPath = path.join(
-    process.cwd(),
-    "public",
-    relativePath
-  );
+  const targetRoots = [getPublicImagesPath()];
+  const localPublicImages = path.join(process.cwd(), "public", "images");
+  if (path.resolve(localPublicImages) !== path.resolve(getPublicImagesPath())) {
+    targetRoots.push(localPublicImages);
+  }
 
-  if (fs.existsSync(fullPath)) {
-    fs.unlinkSync(fullPath);
+  for (const root of targetRoots) {
+    const fullPath =
+      path.join(
+        root,
+        relativePath.replace(
+          /^images[\\/]/,
+          ""
+        )
+      );
+
+    const imagesRoot = path.resolve(root);
+    const resolvedFile = path.resolve(fullPath);
+
+    if (
+      resolvedFile.startsWith(
+        imagesRoot + path.sep
+      ) &&
+      fs.existsSync(resolvedFile)
+    ) {
+      try {
+        fs.unlinkSync(resolvedFile);
+      } catch (err) {
+        console.error("Failed to delete image file:", resolvedFile, err);
+      }
+    }
   }
 }
 
+
+/* =========================================================
+   GET
+========================================================= */
+
 export async function GET() {
   try {
-    const prices = getPrices();
+    const prices =
+      getPrices();
 
-    return NextResponse.json(prices);
-  } catch {
+    return NextResponse.json(
+      prices
+    );
+  } catch (error) {
+    console.error(
+      "GET prices error:",
+      error
+    );
+
     return NextResponse.json(
       {
-        error: "Failed to load prices.",
+        error:
+          "Failed to load prices.",
       },
       {
         status: 500,
@@ -171,11 +302,16 @@ export async function GET() {
   }
 }
 
+/* =========================================================
+   POST
+========================================================= */
+
 export async function POST(
   request: NextRequest
 ) {
   try {
-    const body = await request.json();
+    const body =
+      await request.json();
 
     const {
       service,
@@ -190,7 +326,8 @@ export async function POST(
     if (!service?.trim()) {
       return NextResponse.json(
         {
-          error: "Service name is required.",
+          error:
+            "Service name is required.",
         },
         {
           status: 400,
@@ -201,7 +338,8 @@ export async function POST(
     if (!pricingType) {
       return NextResponse.json(
         {
-          error: "Pricing type is required.",
+          error:
+            "Pricing type is required.",
         },
         {
           status: 400,
@@ -212,7 +350,8 @@ export async function POST(
     if (!unit?.trim()) {
       return NextResponse.json(
         {
-          error: "Unit is required.",
+          error:
+            "Unit is required.",
         },
         {
           status: 400,
@@ -221,12 +360,16 @@ export async function POST(
     }
 
     if (
-      !Array.isArray(uploadedImages) ||
-      uploadedImages.length > MAX_IMAGES
+      !Array.isArray(
+        uploadedImages
+      ) ||
+      uploadedImages.length >
+        MAX_IMAGES
     ) {
       return NextResponse.json(
         {
-          error: `You can upload up to ${MAX_IMAGES} images.`,
+          error:
+            `You can upload up to ${MAX_IMAGES} images.`,
         },
         {
           status: 400,
@@ -234,25 +377,39 @@ export async function POST(
       );
     }
 
-    const newImages = saveUploadedImages(
-      service,
-      uploadedImages
-    );
+    const newImages =
+      saveUploadedImages(
+        service,
+        uploadedImages
+      );
 
-    const price = addPrice({
-      service: service.trim(),
-      description:
-        description?.trim() || "",
-      images: [
-        ...(Array.isArray(images)
-          ? images
-          : []),
-        ...newImages,
-      ],
-      pricingType,
-      unitPrice: Number(unitPrice) || 0,
-      unit: unit.trim(),
-    });
+    const price =
+      addPrice({
+        service:
+          service.trim(),
+
+        description:
+          description?.trim() ||
+          "",
+
+        images: [
+          ...(Array.isArray(
+            images
+          )
+            ? images
+            : []),
+          ...newImages,
+        ],
+
+        pricingType,
+
+        unitPrice:
+          Number(unitPrice) ||
+          0,
+
+        unit:
+          unit.trim(),
+      });
 
     return NextResponse.json(
       price,
@@ -261,7 +418,10 @@ export async function POST(
       }
     );
   } catch (error) {
-    console.error(error);
+    console.error(
+      "POST prices error:",
+      error
+    );
 
     return NextResponse.json(
       {
@@ -277,18 +437,25 @@ export async function POST(
   }
 }
 
+/* =========================================================
+   PUT
+========================================================= */
+
 export async function PUT(
   request: NextRequest
 ) {
   try {
-    const body = await request.json();
+    const body =
+      await request.json();
 
-    const id = Number(body.id);
+    const id =
+      Number(body.id);
 
     if (!id) {
       return NextResponse.json(
         {
-          error: "Price ID is required.",
+          error:
+            "Price ID is required.",
         },
         {
           status: 400,
@@ -296,16 +463,20 @@ export async function PUT(
       );
     }
 
-    const existingPrices = getPrices();
+    const existingPrices =
+      getPrices();
 
-    const existing = existingPrices.find(
-      (price) => price.id === id
-    );
+    const existing =
+      existingPrices.find(
+        (price) =>
+          price.id === id
+      );
 
     if (!existing) {
       return NextResponse.json(
         {
-          error: "Price not found.",
+          error:
+            "Price not found.",
         },
         {
           status: 404,
@@ -326,7 +497,8 @@ export async function PUT(
     if (!service?.trim()) {
       return NextResponse.json(
         {
-          error: "Service name is required.",
+          error:
+            "Service name is required.",
         },
         {
           status: 400,
@@ -336,11 +508,14 @@ export async function PUT(
 
     if (
       !Array.isArray(images) ||
-      !Array.isArray(uploadedImages)
+      !Array.isArray(
+        uploadedImages
+      )
     ) {
       return NextResponse.json(
         {
-          error: "Invalid image data.",
+          error:
+            "Invalid image data.",
         },
         {
           status: 400,
@@ -349,12 +524,17 @@ export async function PUT(
     }
 
     const totalImages =
-      images.length + uploadedImages.length;
+      images.length +
+      uploadedImages.length;
 
-    if (totalImages > MAX_IMAGES) {
+    if (
+      totalImages >
+      MAX_IMAGES
+    ) {
       return NextResponse.json(
         {
-          error: `You can have up to ${MAX_IMAGES} images per service.`,
+          error:
+            `You can have up to ${MAX_IMAGES} images per service.`,
         },
         {
           status: 400,
@@ -362,10 +542,11 @@ export async function PUT(
       );
     }
 
-    const newImages = saveUploadedImages(
-      service,
-      uploadedImages
-    );
+    const newImages =
+      saveUploadedImages(
+        service,
+        uploadedImages
+      );
 
     const finalImages = [
       ...images,
@@ -378,26 +559,45 @@ export async function PUT(
     const removedImages =
       oldImages.filter(
         (oldImage) =>
-          !finalImages.includes(oldImage)
+          !finalImages.includes(
+            oldImage
+          )
       );
 
     removedImages.forEach(
       deleteImageFile
     );
 
-    const updated = updatePrice(id, {
-      service: service.trim(),
-      description:
-        description?.trim() || "",
-      images: finalImages,
-      pricingType,
-      unitPrice: Number(unitPrice) || 0,
-      unit: unit.trim(),
-    });
+    const updated =
+      updatePrice(id, {
+        service:
+          service.trim(),
 
-    return NextResponse.json(updated);
+        description:
+          description?.trim() ||
+          "",
+
+        images:
+          finalImages,
+
+        pricingType,
+
+        unitPrice:
+          Number(unitPrice) ||
+          0,
+
+        unit:
+          unit.trim(),
+      });
+
+    return NextResponse.json(
+      updated
+    );
   } catch (error) {
-    console.error(error);
+    console.error(
+      "PUT prices error:",
+      error
+    );
 
     return NextResponse.json(
       {
@@ -413,18 +613,25 @@ export async function PUT(
   }
 }
 
+/* =========================================================
+   DELETE
+========================================================= */
+
 export async function DELETE(
   request: NextRequest
 ) {
   try {
-    const body = await request.json();
+    const body =
+      await request.json();
 
-    const id = Number(body.id);
+    const id =
+      Number(body.id);
 
     if (!id) {
       return NextResponse.json(
         {
-          error: "Price ID is required.",
+          error:
+            "Price ID is required.",
         },
         {
           status: 400,
@@ -432,16 +639,20 @@ export async function DELETE(
       );
     }
 
-    const prices = getPrices();
+    const prices =
+      getPrices();
 
-    const existing = prices.find(
-      (price) => price.id === id
-    );
+    const existing =
+      prices.find(
+        (price) =>
+          price.id === id
+      );
 
     if (!existing) {
       return NextResponse.json(
         {
-          error: "Price not found.",
+          error:
+            "Price not found.",
         },
         {
           status: 404,
@@ -453,12 +664,14 @@ export async function DELETE(
       deleteImageFile
     );
 
-    const deleted = deletePrice(id);
+    const deleted =
+      deletePrice(id);
 
     if (!deleted) {
       return NextResponse.json(
         {
-          error: "Failed to delete price.",
+          error:
+            "Failed to delete price.",
         },
         {
           status: 500,
@@ -470,7 +683,10 @@ export async function DELETE(
       success: true,
     });
   } catch (error) {
-    console.error(error);
+    console.error(
+      "DELETE prices error:",
+      error
+    );
 
     return NextResponse.json(
       {

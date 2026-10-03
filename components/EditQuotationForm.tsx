@@ -686,26 +686,26 @@ export default function EditQuotationForm({
 
         <div className="grid gap-5 p-6 md:grid-cols-2">
           <Input
-            label="Customer / Organization"
+            label="Customer / Company Name"
             value={customerName}
             onChange={setCustomerName}
             required
           />
 
           <Input
-            label="Contact Person"
+            label="Contact Person (Optional)"
             value={contactPerson}
             onChange={setContactPerson}
           />
 
           <Input
-            label="Phone"
+            label="Phone (Optional)"
             value={phone}
             onChange={setPhone}
           />
 
           <Input
-            label="Email"
+            label="Email (Optional)"
             value={email}
             onChange={setEmail}
           />

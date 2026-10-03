@@ -1,9 +1,7 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable @next/next/no-img-element */
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Price } from "@/types/price";
 import PriceForm from "./PriceForm";
 
@@ -108,10 +106,25 @@ export default function PriceManagement({
       <PriceForm
         key={editingPrice?.id ?? "new"}
         price={editingPrice}
-        onSaved={() => {
-          setEditingPrice(null);
-          loadPrices();
-        }}
+      onSaved={(savedPrice) => {
+                setPrices((currentPrices) => {
+                  const exists = currentPrices.some(
+                    (price) => price.id === savedPrice.id
+                  );
+
+                  if (exists) {
+                    return currentPrices.map((price) =>
+                      price.id === savedPrice.id
+                        ? savedPrice
+                        : price
+                    );
+                  }
+
+                  return [...currentPrices, savedPrice];
+                });
+
+                setEditingPrice(null);
+              }}
         onCancel={
           editingPrice
             ? () => setEditingPrice(null)

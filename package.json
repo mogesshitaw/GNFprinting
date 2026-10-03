@@ -2,26 +2,83 @@
   "name": "gnf-printing",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "electron": "electron .",
+     "electron:build": "npm run build && node scripts/copy-static.mjs && electron-builder"
   },
+
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.3.1",
     "next": "16.3.6",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
+
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+
+  "build": {
+    "appId": "com.gnfprinting.app",
+    "productName": "GNF Printing",
+
+    "directories": {
+      "output": "dist"
+    },
+
+    "asarUnpack": [
+      ".next/standalone/**/*"
+    ],
+
+    "files": [
+      "app/**/*",
+      "components/**/*",
+      "data/**/*",
+      "lib/**/*",
+      "public/**/*",
+      "types/**/*",
+      "electron/**/*",
+      ".next/**/*",
+      "!.next/cache",
+      "!.next/cache/**/*",
+      "!.next/dev",
+      "!.next/dev/**/*",
+      "package.json",
+      "next.config.ts"
+    ],
+    "extraResources": [
+      {
+        "from": ".env.local",
+        "to": ".env.local"
+      }
+    ],
+
+    "win": {
+      "target": "nsis",
+      "artifactName": "GNF-Printing-Setup-${version}.${ext}"
+    },
+
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "GNF Printing"
+    }
   }
 }

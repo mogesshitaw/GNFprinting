@@ -42,7 +42,11 @@ next-env.d.ts
 .env.local
 
 
-# Private quotation/customer data
+# build and dist artifacts
+dist/
+cookies.txt
+
+# Private quotation/customer data - included in git for cross-device sync
 # data/quotations.json
 # data/quotations/
 

@@ -516,12 +516,7 @@ export default function QuotationForm({
     event.preventDefault();
 
     if (!customerName.trim()) {
-      alert("Please enter customer name.");
-      return;
-    }
-
-    if (!phone.trim()) {
-      alert("Please enter customer phone number.");
+      alert("Please enter customer or company name.");
       return;
     }
 
@@ -647,7 +642,7 @@ export default function QuotationForm({
         <div className="grid gap-5 p-6 md:grid-cols-2">
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
-              Customer Name *
+              Customer / Company Name *
             </label>
 
             <input
@@ -656,7 +651,7 @@ export default function QuotationForm({
               onChange={(event) =>
                 setCustomerName(event.target.value)
               }
-              placeholder="e.g. ABC Company"
+              placeholder="e.g. ABC Company or John Doe"
               required
               className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
@@ -664,7 +659,7 @@ export default function QuotationForm({
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
-              Contact Person
+              Contact Person (Optional)
             </label>
 
             <input
@@ -680,7 +675,7 @@ export default function QuotationForm({
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
-              Phone *
+              Phone (Optional)
             </label>
 
             <input
@@ -690,14 +685,13 @@ export default function QuotationForm({
                 setPhone(event.target.value)
               }
               placeholder="09XXXXXXXX"
-              required
               className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
           </div>
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
-              Email
+              Email (Optional)
             </label>
 
             <input

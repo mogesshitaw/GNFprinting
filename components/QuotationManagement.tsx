@@ -206,10 +206,13 @@ export default function QuotationManagement({
                           }
                         </p>
 
-                        <p className="text-xs text-slate-500">
-                          {quotation.phone ||
-                            "No phone"}
-                        </p>
+                        {(quotation.phone || quotation.email || quotation.contactPerson) && (
+                          <p className="text-xs text-slate-500">
+                            {[quotation.contactPerson, quotation.phone, quotation.email]
+                              .filter(Boolean)
+                              .join(" • ")}
+                          </p>
+                        )}
                       </td>
 
                       <td className="px-6 py-5 text-sm text-slate-600">

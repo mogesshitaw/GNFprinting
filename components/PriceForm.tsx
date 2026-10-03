@@ -11,7 +11,7 @@ import { units } from "@/data/units";
 
 interface PriceFormProps {
   price?: Price | null;
-  onSaved?: () => void;
+  onSaved?: (savedPrice: Price) => void;
   onCancel?: () => void;
 }
 
@@ -491,7 +491,7 @@ export default function PriceForm({
       /*
        * Tell PriceManagement to reload.
        */
-      onSaved?.();
+      onSaved?.(data);
     } catch (error) {
       setMessage(
         error instanceof Error

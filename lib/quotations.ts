@@ -1,19 +1,46 @@
 import fs from "fs";
 import path from "path";
 import { Quotation } from "@/types/quotation";
+import { getPrivateDataPath } from "@/lib/paths";
 
-const filePath = path.join(
-  process.cwd(),
-  "data",
-  "quotations.json"
-);
+function getFilePath() {
+  return getPrivateDataPath("quotations.json");
+}
+
+function ensureDataDir() {
+  const filePath = getFilePath();
+  const dataDir = path.dirname(filePath);
+
+  if (
+    !fs.existsSync(
+      /* turbopackIgnore: true */ dataDir
+    )
+  ) {
+    fs.mkdirSync(
+      /* turbopackIgnore: true */ dataDir,
+      {
+        recursive: true,
+      }
+    );
+  }
+}
+
 
 export function getQuotations(): Quotation[] {
-  if (!fs.existsSync(filePath)) {
+  const filePath = getFilePath();
+
+  if (
+    !fs.existsSync(
+      /* turbopackIgnore: true */ filePath
+    )
+  ) {
     return [];
   }
 
-  const file = fs.readFileSync(filePath, "utf-8");
+  const file = fs.readFileSync(
+    /* turbopackIgnore: true */ filePath,
+    "utf-8"
+  );
 
   if (!file.trim()) {
     return [];
@@ -25,9 +52,17 @@ export function getQuotations(): Quotation[] {
 export function saveQuotations(
   quotations: Quotation[]
 ) {
+  ensureDataDir();
+
+  const filePath = getFilePath();
+
   fs.writeFileSync(
-    filePath,
-    JSON.stringify(quotations, null, 2),
+    /* turbopackIgnore: true */ filePath,
+    JSON.stringify(
+      quotations,
+      null,
+      2
+    ),
     "utf-8"
   );
 }
@@ -35,18 +70,25 @@ export function saveQuotations(
 export function createQuotation(
   data: Omit<
     Quotation,
-    "id" | "quotationNumber" | "createdAt" | "updatedAt"
+    | "id"
+    | "quotationNumber"
+    | "createdAt"
+    | "updatedAt"
   >
 ): Quotation {
-  const quotations = getQuotations();
+  const quotations =
+    getQuotations();
 
-  const nextNumber = quotations.length + 1;
+  const nextNumber =
+    quotations.length + 1;
 
-  const quotationNumber = `GNF-Q-${String(
-    nextNumber
-  ).padStart(4, "0")}`;
+  const quotationNumber =
+    `GNF-Q-${String(
+      nextNumber
+    ).padStart(4, "0")}`;
 
-  const now = new Date().toISOString();
+  const now =
+    new Date().toISOString();
 
   const quotation: Quotation = {
     id: crypto.randomUUID(),
@@ -67,11 +109,14 @@ export function updateQuotation(
   id: string,
   data: Partial<Quotation>
 ) {
-  const quotations = getQuotations();
+  const quotations =
+    getQuotations();
 
-  const index = quotations.findIndex(
-    (quotation) => quotation.id === id
-  );
+  const index =
+    quotations.findIndex(
+      (quotation) =>
+        quotation.id === id
+    );
 
   if (index === -1) {
     return null;
@@ -80,7 +125,8 @@ export function updateQuotation(
   quotations[index] = {
     ...quotations[index],
     ...data,
-    updatedAt: new Date().toISOString(),
+    updatedAt:
+      new Date().toISOString(),
   };
 
   saveQuotations(quotations);
@@ -88,14 +134,22 @@ export function updateQuotation(
   return quotations[index];
 }
 
-export function deleteQuotation(id: string) {
-  const quotations = getQuotations();
+export function deleteQuotation(
+  id: string
+) {
+  const quotations =
+    getQuotations();
 
-  const filtered = quotations.filter(
-    (quotation) => quotation.id !== id
-  );
+  const filtered =
+    quotations.filter(
+      (quotation) =>
+        quotation.id !== id
+    );
 
-  if (filtered.length === quotations.length) {
+  if (
+    filtered.length ===
+    quotations.length
+  ) {
     return false;
   }
 
