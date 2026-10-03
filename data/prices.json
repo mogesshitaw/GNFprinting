@@ -40,7 +40,9 @@
     "id": 4,
     "service": "Printing Paper",
     "description": "A4 printing paper.",
-    "images": [],
+    "images": [
+      "/images/services/printing-paper-1790986895472/a9fc62ca-54d9-4406-86ba-96e27685631f-1.jpg"
+    ],
     "pricingType": "quantity",
     "unitPrice": 5,
     "unit": "sheet"
@@ -50,7 +52,7 @@
     "service": "Logo Design",
     "description": "Professional logo design service.",
     "images": [
-      "/images/services/logo-design-1790934055384/wax-1.jpg"
+      "/images/services/logo-design-1790986934199/wax-1.jpg"
     ],
     "pricingType": "fixed",
     "unitPrice": 500,
@@ -78,5 +80,14 @@
     "pricingType": "fixed",
     "unitPrice": 611,
     "unit": "pice"
+  },
+  {
+    "id": 8,
+    "service": "moges",
+    "description": "",
+    "images": [],
+    "pricingType": "fixed",
+    "unitPrice": 556,
+    "unit": "piece"
   }
 ]
