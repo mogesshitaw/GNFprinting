@@ -53,16 +53,5 @@
     "pricingType": "fixed",
     "unitPrice": 1000,
     "unit": "service"
-  },
-  {
-    "id": 6,
-    "service": "tyfy",
-    "description": "",
-    "images": [
-      "/images/services/tyfy-1791036721858/background-1.png"
-    ],
-    "pricingType": "fixed",
-    "unitPrice": 34,
-    "unit": "m"
   }
 ]
