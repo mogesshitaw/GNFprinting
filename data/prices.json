@@ -1,10 +1,10 @@
-[
+﻿[
   {
     "id": 1,
     "service": "Banner Printing",
     "description": "High quality banner printing for indoor and outdoor advertising.",
     "images": [
-      "/images/services/banner-printing-1791065609120/240-f-744396718-rz6uk8azetmxpa5dsyvprrgvnumk2fmf-1.jpg"
+      "/images/services/banner-printing-1791088458839/background-1.png"
     ],
     "pricingType": "area",
     "unitPrice": 3500,
@@ -37,7 +37,7 @@
     "service": "Printing Paper",
     "description": "A4 printing paper.",
     "images": [
-      "/images/services/printing-paper-1790986895472/a9fc62ca-54d9-4406-86ba-96e27685631f-1.jpg"
+      "/images/services/printing-paper-1791088478460/layer-1-1.png"
     ],
     "pricingType": "quantity",
     "unitPrice": 5,
@@ -48,7 +48,7 @@
     "service": "Logo Design",
     "description": "Professional logo design service.",
     "images": [
-      "/images/services/logo-design-1790987518550/a9fc62ca-54d9-4406-86ba-96e27685631f-1.jpg"
+      "/images/services/logo-design-1791088673544/enigmatic-hooded-figure-manipulates-a-glowing-laptop-against-a-mesmerizing-backdrop-of-sparkling-celestial-particles-free-photo-1.jpg"
     ],
     "pricingType": "fixed",
     "unitPrice": 1000,
