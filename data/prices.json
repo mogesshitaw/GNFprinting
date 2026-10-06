@@ -33,17 +33,6 @@
     "unit": "m2"
   },
   {
-    "id": 4,
-    "service": "Printing Paper",
-    "description": "A4 printing paper.",
-    "images": [
-      "/images/services/printing-paper-1791088478460/layer-1-1.png"
-    ],
-    "pricingType": "quantity",
-    "unitPrice": 5,
-    "unit": "sheet"
-  },
-  {
     "id": 5,
     "service": "Logo Design",
     "description": "Professional logo design service.",
