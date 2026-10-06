@@ -62,4 +62,33 @@ if (fs.existsSync(publicSource)) {
 
   console.log("✅ Next.js public files copied:");
   console.log(publicDestination);
+}
+
+// 3. Copy data directory
+const dataSource = path.join(
+  process.cwd(),
+  "data"
+);
+
+const dataDestination = path.join(
+  process.cwd(),
+  ".next",
+  "standalone",
+  "data"
+);
+
+if (fs.existsSync(dataSource)) {
+  fs.mkdirSync(
+    path.dirname(dataDestination),
+    { recursive: true }
+  );
+
+  fs.cpSync(
+    dataSource,
+    dataDestination,
+    { recursive: true }
+  );
+
+  console.log("✅ Data files copied to standalone:");
+  console.log(dataDestination);
 }

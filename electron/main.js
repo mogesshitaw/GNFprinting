@@ -63,15 +63,24 @@ function getGitExecutable() {
     return "git";
   }
 
+  const localAppData = process.env.LOCALAPPDATA || "";
+  const programFiles = process.env.ProgramFiles || "C:\\Program Files";
+  const programFilesX86 = process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)";
+  const userProfile = process.env.USERPROFILE || "";
+
   const candidates = [
-    "C:\\Program Files\\Git\\cmd\\git.exe",
-    "C:\\Program Files\\Git\\bin\\git.exe",
-    "C:\\Program Files (x86)\\Git\\cmd\\git.exe",
-    "C:\\Program Files (x86)\\Git\\bin\\git.exe",
+    path.join(programFiles, "Git", "cmd", "git.exe"),
+    path.join(programFiles, "Git", "bin", "git.exe"),
+    path.join(programFilesX86, "Git", "cmd", "git.exe"),
+    path.join(programFilesX86, "Git", "bin", "git.exe"),
+    path.join(localAppData, "Programs", "Git", "cmd", "git.exe"),
+    path.join(localAppData, "Programs", "Git", "bin", "git.exe"),
+    path.join(userProfile, "AppData", "Local", "Programs", "Git", "cmd", "git.exe"),
+    path.join(userProfile, "AppData", "Local", "Programs", "Git", "bin", "git.exe"),
   ];
 
   for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
+    if (candidate && fs.existsSync(candidate)) {
       return candidate;
     }
   }
@@ -135,9 +144,10 @@ async function runGit(args, cwd) {
 ========================================================= */
 
 async function checkGitInstalled() {
+  const gitExecutable = getGitExecutable();
   try {
     const result = await execFileAsync(
-      "git",
+      gitExecutable,
       ["--version"],
       {
         windowsHide: true,
@@ -151,13 +161,51 @@ async function checkGitInstalled() {
 
     return true;
   } catch (error) {
-    console.error(
-      "Git is not installed:",
-      error
+    console.warn(
+      "Git is not detected:",
+      error.message
     );
 
     return false;
   }
+}
+
+/* =========================================================
+   LOCAL DATA INITIALIZATION
+========================================================= */
+
+function copyDirectoryRecursive(src, dest) {
+  if (!fs.existsSync(src)) return;
+  ensureDirectory(dest);
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDirectoryRecursive(srcPath, destPath);
+    } else if (!fs.existsSync(destPath)) {
+      try {
+        fs.copyFileSync(srcPath, destPath);
+      } catch (err) {
+        console.warn("Copy file warning:", err.message);
+      }
+    }
+  }
+}
+
+function ensureLocalRepositoryData(repositoryDirectory) {
+  ensureDirectory(repositoryDirectory);
+
+  const bundledData = app.isPackaged
+    ? path.join(process.resourcesPath, "app.asar.unpacked", ".next", "standalone", "data")
+    : path.join(process.cwd(), "data");
+
+  const bundledImages = app.isPackaged
+    ? path.join(process.resourcesPath, "app.asar.unpacked", ".next", "standalone", "public", "images")
+    : path.join(process.cwd(), "public", "images");
+
+  copyDirectoryRecursive(bundledData, path.join(repositoryDirectory, "data"));
+  copyDirectoryRecursive(bundledImages, path.join(repositoryDirectory, "public", "images"));
 }
 
 /* =========================================================
@@ -169,14 +217,15 @@ async function setupGitRepository() {
     getGitRepositoryDirectory();
 
   console.log(
-    "Git repository:",
+    "Git repository directory:",
     repositoryDirectory
   );
 
+  // Always ensure baseline local data exists so app can start offline/without Git
+  ensureLocalRepositoryData(repositoryDirectory);
+
   // Development mode
   if (!app.isPackaged) {
-    ensureDirectory(repositoryDirectory);
-
     try {
       await runGit(
         ["rev-parse", "--is-inside-work-tree"],
@@ -186,19 +235,22 @@ async function setupGitRepository() {
       console.log(
         "Development Git repository detected."
       );
-
-      return repositoryDirectory;
     } catch {
-      throw new Error(
-        "Development folder is not a Git repository."
+      console.log(
+        "Development folder is not a Git repository. Running locally."
       );
     }
+    return repositoryDirectory;
   }
 
-  // Packaged application
-  ensureDirectory(
-    path.dirname(repositoryDirectory)
-  );
+  // Packaged application: check if Git is installed
+  const gitInstalled = await checkGitInstalled();
+  if (!gitInstalled) {
+    console.log(
+      "Git is not installed on this computer. Running in local/offline mode."
+    );
+    return repositoryDirectory;
+  }
 
   // Already cloned?
   if (
@@ -220,19 +272,10 @@ async function setupGitRepository() {
         repositoryDirectory
       );
 
-      console.log(
-        "Current origin:",
-        remote.stdout
-      );
-
       if (
         remote.stdout.trim() !==
         GITHUB_REPO
       ) {
-        console.log(
-          "Updating Git origin..."
-        );
-
         await runGit(
           [
             "remote",
@@ -243,29 +286,19 @@ async function setupGitRepository() {
           repositoryDirectory
         );
       }
-
-      return repositoryDirectory;
     } catch (error) {
-      console.error(
-        "Existing repository check failed:",
-        error
+      console.warn(
+        "Existing repository origin check warning:",
+        error.message
       );
-
-      throw error;
     }
+
+    return repositoryDirectory;
   }
 
-  // First launch
+  // First launch with Git installed: attempt to clone
   console.log(
-    "Git repository does not exist."
-  );
-
-  if (fs.existsSync(repositoryDirectory)) {
-    fs.rmSync(repositoryDirectory, { recursive: true, force: true });
-  }
-
-  console.log(
-    "Cloning:",
+    "Cloning repository from GitHub:",
     GITHUB_REPO
   );
 
@@ -284,19 +317,15 @@ async function setupGitRepository() {
     console.log(
       "Git repository cloned successfully."
     );
-
-    return repositoryDirectory;
   } catch (error) {
-    console.error(
-      "Git clone failed:",
-      error
+    console.warn(
+      "Git clone failed (running in local mode):",
+      error.message
     );
-
-    throw new Error(
-      "Unable to clone the GNF Printing GitHub repository.\n\n" +
-      "Please make sure Git is installed and GitHub authentication is available."
-    );
+    ensureLocalRepositoryData(repositoryDirectory);
   }
+
+  return repositoryDirectory;
 }
 
 /* =========================================================
@@ -454,23 +483,34 @@ async function startNextServer() {
     }
   );
 
+  const logFile = path.join(app.getPath("userData"), "server.log");
+  const appendLog = (msg) => {
+    try {
+      fs.appendFileSync(logFile, `${new Date().toISOString()} ${msg}\n`);
+    } catch {}
+  };
+
   nextServer.stdout.on(
     "data",
     (data) => {
+      const text = data.toString();
       console.log(
         "[Next]",
-        data.toString()
+        text
       );
+      appendLog(`[Next] ${text.trim()}`);
     }
   );
 
   nextServer.stderr.on(
     "data",
     (data) => {
+      const text = data.toString();
       console.error(
         "[Next ERROR]",
-        data.toString()
+        text
       );
+      appendLog(`[Next ERROR] ${text.trim()}`);
     }
   );
 
@@ -620,31 +660,12 @@ if (!gotLock) {
           "================================="
         );
 
-        // Check Git
-        const gitInstalled =
-          await checkGitInstalled();
-
-        if (!gitInstalled) {
-          await dialog.showMessageBox({
-            type: "error",
-            title: "Git Required",
-            message:
-              "Git is required for publishing.",
-            detail:
-              "Please install Git for Windows and restart GNF Printing.",
-          });
-
-          app.quit();
-
-          return;
-        }
-
         // Create data directory
         ensureDirectory(
           getDataDirectory()
         );
 
-        // Setup repository
+        // Setup repository (graceful with local fallback if Git is not installed)
         await setupGitRepository();
 
         // Start Next

@@ -39,23 +39,28 @@ function getGitExecutable() {
     return "git";
   }
 
+  const localAppData = process.env.LOCALAPPDATA || "";
+  const programFiles = process.env.ProgramFiles || "C:\\Program Files";
+  const programFilesX86 = process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)";
+  const userProfile = process.env.USERPROFILE || "";
+
   const candidates = [
-    "C:\\Program Files\\Git\\cmd\\git.exe",
-    "C:\\Program Files\\Git\\bin\\git.exe",
-    "C:\\Program Files (x86)\\Git\\cmd\\git.exe",
-    "C:\\Program Files (x86)\\Git\\bin\\git.exe",
+    path.join(programFiles, "Git", "cmd", "git.exe"),
+    path.join(programFiles, "Git", "bin", "git.exe"),
+    path.join(programFilesX86, "Git", "cmd", "git.exe"),
+    path.join(programFilesX86, "Git", "bin", "git.exe"),
+    path.join(localAppData, "Programs", "Git", "cmd", "git.exe"),
+    path.join(localAppData, "Programs", "Git", "bin", "git.exe"),
+    path.join(userProfile, "AppData", "Local", "Programs", "Git", "cmd", "git.exe"),
+    path.join(userProfile, "AppData", "Local", "Programs", "Git", "bin", "git.exe"),
   ];
 
   for (const candidate of candidates) {
-    if (fs.existsSync(/*turbopackIgnore: true*/ candidate)) {
+    if (candidate && fs.existsSync(/*turbopackIgnore: true*/ candidate)) {
       return candidate;
     }
   }
 
-  /*
-    If Git is installed somewhere else but available
-    through PATH, try "git".
-  */
   return "git";
 }
 
@@ -77,15 +82,15 @@ async function runGit(args: string[]) {
   console.log("Git arguments:", args);
   console.log("=================================");
 
-  if (!fs.existsSync(/*turbopackIgnore: true*/ git)) {
+  if (git !== "git" && !fs.existsSync(/*turbopackIgnore: true*/ git)) {
     throw new Error(
-      `Git executable was not found:\n${git}`
+      `Git for Windows is required to publish changes to GitHub.\n\nPlease install Git for Windows (https://git-scm.com/download/win) to enable publishing.`
     );
   }
 
   if (!fs.existsSync(/*turbopackIgnore: true*/ cwd)) {
     throw new Error(
-      `Git repository directory was not found:\n${cwd}`
+      `Data directory was not found:\n${cwd}`
     );
   }
 
@@ -95,7 +100,7 @@ async function runGit(args: string[]) {
     )
   ) {
     throw new Error(
-      `The Git repository does not contain a .git directory:\n${cwd}`
+      `Publishing requires a Git repository.\n\nThis computer is currently running in local mode. Please install Git for Windows and clone the repository to enable publishing.`
     );
   }
 
