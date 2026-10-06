@@ -25,27 +25,32 @@ export function getPrices(): Price[] {
     return [];
   }
 
-  const file = fs.readFileSync(
-    filePath,
-    "utf-8"
-  );
+  try {
+    const file = fs.readFileSync(
+      filePath,
+      "utf-8"
+    ).replace(/^\uFEFF/, "").trim();
 
-  if (!file.trim()) {
+    if (!file) {
+      return [];
+    }
+
+    const data = JSON.parse(file);
+
+    if (!Array.isArray(data)) {
+      return [];
+    }
+
+    return data.map((price) => ({
+      ...price,
+      images: Array.isArray(price.images)
+        ? price.images
+        : [],
+    }));
+  } catch (error) {
+    console.error("Error loading prices from:", filePath, error);
     return [];
   }
-
-  const data = JSON.parse(file);
-
-  if (!Array.isArray(data)) {
-    return [];
-  }
-
-  return data.map((price) => ({
-    ...price,
-    images: Array.isArray(price.images)
-      ? price.images
-      : [],
-  }));
 }
 
 export function savePrices(

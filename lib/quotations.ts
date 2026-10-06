@@ -37,16 +37,22 @@ export function getQuotations(): Quotation[] {
     return [];
   }
 
-  const file = fs.readFileSync(
-    /* turbopackIgnore: true */ filePath,
-    "utf-8"
-  );
+  try {
+    const file = fs.readFileSync(
+      /* turbopackIgnore: true */ filePath,
+      "utf-8"
+    ).replace(/^\uFEFF/, "").trim();
 
-  if (!file.trim()) {
+    if (!file) {
+      return [];
+    }
+
+    const data = JSON.parse(file);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Error loading quotations from:", filePath, error);
     return [];
   }
-
-  return JSON.parse(file);
 }
 
 export function saveQuotations(

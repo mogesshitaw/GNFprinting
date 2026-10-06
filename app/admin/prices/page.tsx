@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getPrices } from "@/lib/prices";
 import PriceManagement from "@/components/PriceManagement";
 import AdminHeader from "@/components/AdminHeader";
+export const dynamic = "force-dynamic";
 
 export default async function AdminPricesPage() {
   const cookieStore = await cookies();

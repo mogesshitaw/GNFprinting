@@ -533,21 +533,34 @@ async function waitForServer(
 ========================================================= */
 
 async function createWindow() {
-  mainWindow =
-    new BrowserWindow({
-      width: 1400,
-      height: 900,
+  const iconPath = path.join(
+    app.getAppPath(),
+    "electron",
+    "icon.ico"
+  );
 
-      minWidth: 1100,
-      minHeight: 700,
+  console.log("Electron icon:", iconPath);
+  console.log(
+    "Icon exists:",
+    fs.existsSync(iconPath)
+  );
 
-      webPreferences: {
-        contextIsolation: true,
-        nodeIntegration: false,
-      },
+  mainWindow = new BrowserWindow({
+    width: 1400,
+    height: 900,
 
-      show: false,
-    });
+    minWidth: 1100,
+    minHeight: 700,
+
+    icon: iconPath,
+
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+
+    show: false,
+  });
 
   mainWindow.once(
     "ready-to-show",
@@ -567,7 +580,6 @@ async function createWindow() {
     }
   );
 }
-
 /* =========================================================
    SINGLE INSTANCE
 ========================================================= */

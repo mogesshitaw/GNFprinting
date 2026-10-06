@@ -6,6 +6,7 @@ import { getQuotations } from "@/lib/quotations";
 
 import QuotationManagement from "@/components/QuotationManagement";
 import AdminHeader from "@/components/AdminHeader";
+export const dynamic = "force-dynamic";
 
 export default async function QuotationsPage() {
   const cookieStore = await cookies();

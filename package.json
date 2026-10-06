@@ -34,13 +34,10 @@
   },
 
   "build": {
-    "appId": "com.gnfprinting.app",
-    "productName": "GNF Printing",
-
-    "directories": {
-      "output": "dist"
-    },
-
+  "appId": "com.gnfprinting.app",
+  "productName": "GNF Printing",
+  "icon": "electron/icon.ico",
+  
     "asarUnpack": [
       ".next/standalone/**/*"
     ],
